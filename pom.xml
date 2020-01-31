@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- The simplest way to build a service with service-sdk-starter-core 
+        is to use it as a parent in your project’s POM file, and alternative If you 
+        don’t want to use service-sdk-starter-core as your project’s parent, you 
+        can declare it as a dependency instead, see pom-as-dependency.xml -->
+    <parent>
+        <artifactId>service-sdk-starter-core</artifactId>
+        <groupId>com.backbase.buildingblocks</groupId>
+        <version>9.3.1</version>
+        <relativePath />
+    </parent>
+
+    <groupId>com.mybank.dbs.payments.integration</groupId>
+    <artifactId>payments-integration</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+    <name>Backbase :: Digital Banking Services :: my-bank-payment-order-integration-service</name>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <spec.dependencies.path>${project.build.directory}/dependencies</spec.dependencies.path>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.backbase.dbs</groupId>
+                <artifactId>banking-services-bom</artifactId>
+                <version>2.17.1.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.backbase.buildingblocks</groupId>
+            <artifactId>api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.backbase.buildingblocks</groupId>
+            <artifactId>auth-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.backbase.buildingblocks</groupId>
+            <artifactId>communication</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.backbase.buildingblocks</groupId>
+            <artifactId>service-sdk-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Add dependencies for your services, e.g. BB raml specifications, integration clients -->
+
+        <!-- Uncomment the following dependency if DBS inter-service communication is needed -->
+        <!--
+         <dependency>
+            <groupId>com.backbase.buildingblocks</groupId>
+            <artifactId>communication</artifactId>
+         </dependency>
+       -->
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-integration-spec</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.backbase.dbs.paymentorder</groupId>
+                                    <artifactId>payment-order-integration-spec</artifactId>
+                                    <overWrite>true</overWrite>
+                                    <excludes>META-INF/**,com/**</excludes>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${spec.dependencies.path}/payment-order-integration-spec</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-presentation-spec</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.backbase.dbs.paymentorder</groupId>
+                                    <artifactId>payment-order-presentation-spec</artifactId>
+                                    <overWrite>true</overWrite>
+                                    <excludes>META-INF/**,com/**</excludes>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${spec.dependencies.path}/payment-order-presentation-spec</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.backbase.codegen</groupId>
+                <artifactId>raml-api-maven-plugin-1-0</artifactId>
+                <version>9.3.1</version>
+                <executions>
+                    <execution>
+                        <id>integration-spec</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>raml-api-generator</goal>
+                        </goals>
+                        <configuration>
+                            <inputFile>${spec.dependencies.path}/payment-order-integration-spec/service-api.raml</inputFile>
+                            <outputFile>${project.build.directory}/generated-sources/</outputFile>
+                            <packageName>payments.integration</packageName>
+                            <useJavaTime>true</useJavaTime>
+                            <backwardsCompatibleDateMethods>false</backwardsCompatibleDateMethods>
+                            <serviceId>payment-order-integration-service</serviceId>
+                            <generateApi>true</generateApi>
+                            <generateClients>false</generateClients>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>presentation-spec</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>raml-api-generator</goal>
+                        </goals>
+                        <configuration>
+                            <inputFile>${spec.dependencies.path}/payment-order-presentation-spec/service-api.raml</inputFile>
+                            <outputFile>${project.build.directory}/generated-sources/</outputFile>
+                            <packageName>payments.presentation</packageName>
+                            <useJavaTime>true</useJavaTime>
+                            <backwardsCompatibleDateMethods>false</backwardsCompatibleDateMethods>
+                            <serviceId>payment-order-presentation-service</serviceId>
+                            <generateApi>true</generateApi>
+                            <generateClients>true</generateClients>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
