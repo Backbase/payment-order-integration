@@ -21,9 +21,11 @@ import org.slf4j.LoggerFactory;
 
 public class PaymentOrdersController implements PaymentOrdersApi {
 
+    private static final String JSON_EXTENSION = ".json";
+    private static String ROOT_ORDER_PATH = "/tmp/orders";
+
     private Logger log = LoggerFactory.getLogger(PaymentOrdersController.class);
 
-    private static String ROOT_ORDER_PATH = "/tmp/orders";
     private ObjectWriter objectMapper = new ObjectMapper().writer(new DefaultPrettyPrinter());
 
     @Override
@@ -35,7 +37,7 @@ public class PaymentOrdersController implements PaymentOrdersApi {
         try {
             String bankReferenceId = UUID.randomUUID().toString();
             objectMapper.writeValue(
-                new File(ROOT_ORDER_PATH, bankReferenceId + ".json"), paymentOrdersPostRequestBody);
+                new File(ROOT_ORDER_PATH, makePaymentOrderFileName(bankReferenceId)), paymentOrdersPostRequestBody);
             return new PaymentOrdersPostResponseBody()
                 .withBankReferenceId(bankReferenceId)
                 .withStatus(Status.ACCEPTED)
@@ -51,6 +53,11 @@ public class PaymentOrdersController implements PaymentOrdersApi {
         HttpServletResponse httpServletResponse)
         throws BadRequestException, InternalServerErrorException, NotFoundException {
 
-        return new CancelResponse().withAccepted(new File(ROOT_ORDER_PATH, bankReferenceId).delete());
+        return new CancelResponse()
+            .withAccepted(new File(ROOT_ORDER_PATH, makePaymentOrderFileName(bankReferenceId)).delete());
+    }
+
+    private String makePaymentOrderFileName(String bankReferenceId) {
+        return bankReferenceId.concat(JSON_EXTENSION);
     }
 }

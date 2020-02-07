@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrderExecutor {
 
+    private static final String JSON_EXTENSION = ".json";
     private static String ROOT_ORDER_PATH = "/tmp/orders";
 
     private static Logger logger = LoggerFactory.getLogger(OrderExecutor.class);
@@ -29,9 +30,9 @@ public class OrderExecutor {
     @Scheduled(fixedRate = 10000)
     public void execute() {
 
-        Arrays.stream(new File(ROOT_ORDER_PATH).listFiles(f -> f.isFile() && f.getName().endsWith(".json")))
+        Arrays.stream(new File(ROOT_ORDER_PATH).listFiles(f -> f.isFile() && f.getName().endsWith(JSON_EXTENSION)))
             .forEach(f -> {
-                String bankReferenceId = f.getName().replace(".json", "");
+                String bankReferenceId = f.getName().replace(JSON_EXTENSION, "");
                 UpdatePaymentOrderStatusPutRequestBody requestBody = new UpdatePaymentOrderStatusPutRequestBody()
                     .withBankReferenceId(bankReferenceId)
                     .withStatus(Status.PROCESSED)
