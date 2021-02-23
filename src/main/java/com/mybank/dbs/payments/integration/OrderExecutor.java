@@ -1,12 +1,12 @@
 package com.mybank.dbs.payments.integration;
 
 import com.backbase.buildingblocks.presentation.errors.BadRequestException;
-import com.backbase.dbs.presentation.paymentorder.rest.spec.v2.paymentorders.RetryPaymentOrders;
-import com.backbase.payments.presentation.listener.client.v2.paymentorders.PaymentsPresentationPaymentOrdersClient;
-import com.backbase.payments.presentation.rest.spec.v2.paymentorders.UpdatePaymentOrderStatusPutRequestBody;
-import com.backbase.payments.presentation.rest.spec.v2.paymentorders.UpdatePaymentOrderStatusPutRequestBody.Status;
+import com.backbase.payments.integration.model.PaymentOrdersPutRequestBody;
+import com.backbase.payments.integration.model.RetryPaymentOrdersRequest;
 import java.io.File;
 import java.util.Arrays;
+import org.openapitools.client.api.PaymentOrdersApi;
+import org.openapitools.client.api.RetryFailedOrdersApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,11 +20,13 @@ public class OrderExecutor {
 
     private static Logger logger = LoggerFactory.getLogger(OrderExecutor.class);
 
-    private final PaymentsPresentationPaymentOrdersClient paymentsPresentationPaymentOrdersClient;
+    private final PaymentOrdersApi paymentOrdersApi;
+    private final RetryFailedOrdersApi retryFailedOrdersApi;
 
-    OrderExecutor(PaymentsPresentationPaymentOrdersClient paymentsPresentationPaymentOrdersClient) {
+    OrderExecutor(PaymentOrdersApi paymentOrdersApi, RetryFailedOrdersApi retryFailedOrdersApi) {
         super();
-        this.paymentsPresentationPaymentOrdersClient = paymentsPresentationPaymentOrdersClient;
+        this.paymentOrdersApi = paymentOrdersApi;
+        this.retryFailedOrdersApi = retryFailedOrdersApi;
     }
 
     @Scheduled(fixedRate = 10000)
@@ -33,13 +35,12 @@ public class OrderExecutor {
         Arrays.stream(new File(ROOT_ORDER_PATH).listFiles(f -> f.isFile() && f.getName().endsWith(JSON_EXTENSION)))
             .forEach(f -> {
                 String bankReferenceId = f.getName().replace(JSON_EXTENSION, "");
-                UpdatePaymentOrderStatusPutRequestBody requestBody = new UpdatePaymentOrderStatusPutRequestBody()
-                    .withBankReferenceId(bankReferenceId)
-                    .withStatus(Status.PROCESSED)
-                    .withBankStatus("DONE")
-                    .withReasonText("Dev null processing");
+                PaymentOrdersPutRequestBody requestBody = new PaymentOrdersPutRequestBody()
+                    .bankReferenceId(bankReferenceId)
+                    .bankStatus("DONE")
+                    .reasonText("Dev null processing");
                 try {
-                    paymentsPresentationPaymentOrdersClient.putUpdatePaymentOrderStatus(requestBody);
+                    paymentOrdersApi.putPaymentOrders(requestBody);
                     f.delete(); // All you order go to /dev/null
                 } catch (BadRequestException e) {
                     logger.error("Error sending status update", e);
@@ -51,6 +52,6 @@ public class OrderExecutor {
 
     @Scheduled(fixedRate = 20000)
     public void callRetry() {
-        paymentsPresentationPaymentOrdersClient.putRetryFailedOrders(new RetryPaymentOrders());
+        retryFailedOrdersApi.putRetryFailedOrders(new RetryPaymentOrdersRequest());
     }
 }
