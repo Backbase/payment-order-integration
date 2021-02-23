@@ -2,7 +2,7 @@ Example code for payments integration service. Goes with (newer version of) http
 
 # my-bank-payment-order-integration-service
 
-_Fill out this file with some information about your Service._
+Very naive implementation of a payment integration service. It receives payments from the Backbase payment-order-service and stores them on the file system in `/tmp/orders`. It processes these payments on a schedule to call back to payment-order-service to update the status before deleting the file. Functionality also includes calling the retry endpoint to receive payments that were submitted to the payment-order-service while the integration was down.
 
 ## Dependencies
 
@@ -22,6 +22,9 @@ To run the service from the built binaries, use:
 
 ## Authorization
 
-Requests to this service are authorized with a Backbase Internal JWT, therefore you must access this service via the Backbase Gateway after authenticating with the authentication service.
+This service uses service-2-service authentication on its receiving endpoints. It assumes mTLS is *turned off* on payment-order-service.
 
-For local development, an internal JWT can be created from http://jwt.io, entering ```JWTSecretKeyDontUseInProduction!``` as the secret in the signature to generate a valid signed JWT.
+## Todo
+
+* Add mTLS security.
+* Add confirmation resync call.
