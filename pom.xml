@@ -131,8 +131,8 @@
                         <configuration>
                             <inputSpec>${specs.path}/payment/payment-order-integration-outbound-api-v2.0.6.yaml</inputSpec>
                             <output>${project.build.directory}/generated-sources/</output>
-                            <packageName>com.backbase.payments.integration.outbound</packageName>
                             <modelPackage>com.backbase.payments.integration.model</modelPackage>
+                            <apiPackage>com.backbase.payments.integration.outbound.api</apiPackage>
                         </configuration>
                     </execution>
                     <execution>
@@ -144,8 +144,8 @@
                         <configuration>
                             <inputSpec>${specs.path}/payment/payment-order-integration-inbound-api-v2.0.2.yaml</inputSpec>
                             <output>${project.build.directory}/generated-sources/</output>
-                            <packageName>com.backbase.payments.integration.inbound</packageName>
                             <modelPackage>com.backbase.payments.integration.model</modelPackage>
+                            <apiPackage>com.backbase.payments.integration.inbound.api</apiPackage>
                         </configuration>
                     </execution>
                 </executions>

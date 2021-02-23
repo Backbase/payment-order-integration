@@ -1,12 +1,12 @@
 package com.mybank.dbs.payments.integration;
 
 import com.backbase.buildingblocks.presentation.errors.BadRequestException;
+import com.backbase.payments.integration.inbound.api.PaymentOrdersApi;
+import com.backbase.payments.integration.inbound.api.RetryFailedOrdersApi;
 import com.backbase.payments.integration.model.PaymentOrdersPutRequestBody;
 import com.backbase.payments.integration.model.RetryPaymentOrdersRequest;
 import java.io.File;
 import java.util.Arrays;
-import org.openapitools.client.api.PaymentOrdersApi;
-import org.openapitools.client.api.RetryFailedOrdersApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;

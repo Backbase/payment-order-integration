@@ -1,10 +1,10 @@
 package com.mybank.dbs.payments.integration;
 
 import com.backbase.buildingblocks.communication.http.HttpCommunicationConfiguration;
-import com.backbase.payments.integration.ApiClient;
+import com.backbase.payments.integration.inbound.ApiClient;
+import com.backbase.payments.integration.inbound.api.PaymentOrdersApi;
+import com.backbase.payments.integration.inbound.api.RetryFailedOrdersApi;
 import javax.validation.constraints.Pattern;
-import org.openapitools.client.api.PaymentOrdersApi;
-import org.openapitools.client.api.RetryFailedOrdersApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

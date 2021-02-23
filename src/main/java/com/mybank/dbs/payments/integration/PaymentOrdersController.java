@@ -4,6 +4,7 @@ import com.backbase.buildingblocks.presentation.errors.InternalServerErrorExcept
 import com.backbase.payments.integration.model.CancelResponse;
 import com.backbase.payments.integration.model.PaymentOrdersPostRequestBody;
 import com.backbase.payments.integration.model.PaymentOrdersPostResponseBody;
+import com.backbase.payments.integration.outbound.api.PaymentOrderIntegrationOutboundApi;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -11,7 +12,6 @@ import java.io.File;
 import java.util.UUID;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
-import org.openapitools.api.PaymentOrderIntegrationOutboundApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
