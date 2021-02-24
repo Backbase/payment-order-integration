@@ -19,6 +19,7 @@
     <packaging>war</packaging>
     <name>Backbase :: Digital Banking Services :: my-bank-payment-order-integration-service</name>
 
+    <!-- tag::add-properties[] -->
     <properties>
         <java.version>11</java.version>
         <swagger-annotations.version>1.6.2</swagger-annotations.version>
@@ -26,7 +27,9 @@
       <jsr305.version>3.0.2</jsr305.version>
         <specs.path>${project.build.directory}/specs</specs.path>
     </properties>
+    <!-- end::add-properties[] -->
 
+    <!-- tag::add-dependency-management[] -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -38,8 +41,10 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+    <!-- end::add-dependency-management[] -->
 
     <dependencies>
+        <!-- tag::add-building-blocks-dependencies[] -->
         <dependency>
             <groupId>com.backbase.buildingblocks</groupId>
             <artifactId>service-sdk-common-core</artifactId>
@@ -61,6 +66,7 @@
             <artifactId>service-sdk-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- tag::add-building-blocks-dependencies[] -->
 
         <dependency>
             <groupId>io.swagger</groupId>
@@ -91,6 +97,7 @@
 
     <build>
         <plugins>
+            <!-- tag::add-dependency-plugin[] -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -116,7 +123,8 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <!-- end::add-dependency-plugin[] -->
+            <!-- tag::add-boat-plugin[] -->
             <plugin>
                 <groupId>com.backbase.oss</groupId>
                 <artifactId>boat-maven-plugin</artifactId>
@@ -135,6 +143,7 @@
                             <apiPackage>com.backbase.payments.integration.outbound.api</apiPackage>
                         </configuration>
                     </execution>
+                    <!-- tag::add-inbound-integration-api[] -->
                     <execution>
                         <id>generate-integration-inbound-client</id>
                         <phase>generate-sources</phase>
@@ -148,8 +157,10 @@
                             <apiPackage>com.backbase.payments.integration.inbound.api</apiPackage>
                         </configuration>
                     </execution>
+                    <!-- end::add-inbound-integration-api[] -->
                 </executions>
             </plugin>
+            <!-- end::add-boat-plugin[] -->
         </plugins>
     </build>
 </project>
