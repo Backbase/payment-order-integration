@@ -5,14 +5,18 @@ import com.backbase.payments.integration.inbound.ApiClient;
 import com.backbase.payments.integration.inbound.api.PaymentOrdersApi;
 import com.backbase.payments.integration.inbound.api.RetryFailedOrdersApi;
 import javax.validation.constraints.Pattern;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
-@org.springframework.context.annotation.Configuration
+@Getter
+@Setter
+@Configuration
 @ConfigurationProperties("backbase.communication.services.dbs.payment-order-service")
 public class ClientConfiguration {
 
@@ -22,41 +26,23 @@ public class ClientConfiguration {
     @Pattern(regexp = "https?")
     private String scheme;
 
-    @Autowired
-    @Qualifier("interServiceRestTemplate")
-    private RestTemplate restTemplate;
-
     @Bean
-    public RetryFailedOrdersApi createRetryFailedOrdersApi() {
-        return new RetryFailedOrdersApi(createApiClient());
+    public RetryFailedOrdersApi createRetryFailedOrdersApi(
+        @Qualifier("interServiceRestTemplate") RestTemplate restTemplate) {
+        return new RetryFailedOrdersApi(createApiClient(restTemplate));
     }
 
     @Bean
-    public PaymentOrdersApi createPaymentOrdersApi() {
-        return new PaymentOrdersApi(createApiClient());
+    public PaymentOrdersApi createPaymentOrdersApi(
+        @Qualifier("interServiceRestTemplate") RestTemplate restTemplate) {
+        return new PaymentOrdersApi(createApiClient(restTemplate));
     }
 
-    private ApiClient createApiClient() {
+    private ApiClient createApiClient(RestTemplate restTemplate) {
         ApiClient apiClient = new ApiClient(restTemplate);
         apiClient.setBasePath(String.format("%s://%s", scheme, serviceId));
         apiClient.addDefaultHeader(HttpCommunicationConfiguration.INTERCEPTORS_ENABLED_HEADER, Boolean.TRUE.toString());
         return apiClient;
-    }
-
-    public String getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
-    public String getScheme() {
-        return scheme;
-    }
-
-    public void setScheme(String scheme) {
-        this.scheme = scheme;
     }
 
 }

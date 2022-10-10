@@ -1,38 +1,43 @@
 package com.mybank.dbs.payments.integration;
 
+import static com.mybank.dbs.payments.integration.ApplicationConfiguration.JSON_EXTENSION;
+import static com.mybank.dbs.payments.integration.ApplicationConfiguration.ROOT_ORDER_FOLDER;
+
 import com.backbase.buildingblocks.presentation.errors.InternalServerErrorException;
+import com.backbase.payments.integration.inbound.api.PaymentOrdersApi;
 import com.backbase.payments.integration.model.CancelResponse;
+import com.backbase.payments.integration.model.PaymentOrderPutRequestBody;
+import com.backbase.payments.integration.model.PaymentOrderPutResponseBody;
 import com.backbase.payments.integration.model.PaymentOrdersPostRequestBody;
 import com.backbase.payments.integration.model.PaymentOrdersPostResponseBody;
+import com.backbase.payments.integration.model.PaymentOrdersPutRequestBody;
 import com.backbase.payments.integration.outbound.api.PaymentOrderIntegrationOutboundApi;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import java.io.File;
 import java.util.UUID;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
 
+@RequiredArgsConstructor
+@Slf4j
+@RestController
 public class PaymentOrdersController implements PaymentOrderIntegrationOutboundApi {
 
-    private static final String JSON_EXTENSION = ".json";
-    private static String ROOT_ORDER_PATH = "/tmp/orders";
-
-    private Logger log = LoggerFactory.getLogger(PaymentOrdersController.class);
-
-    private ObjectWriter objectMapper = new ObjectMapper().writer(new DefaultPrettyPrinter());
+    private final ObjectWriter objectWriter;
+    private final PaymentOrdersApi paymentOrdersApi;
 
     @Override
     public ResponseEntity<PaymentOrdersPostResponseBody> postPaymentOrders(
         @Valid PaymentOrdersPostRequestBody paymentOrdersPostRequestBody) {
-        log.info("Received payment order {}", paymentOrdersPostRequestBody);
+        log.info("Initiate payment order {}", paymentOrdersPostRequestBody);
         try {
             String bankReferenceId = UUID.randomUUID().toString();
-            objectMapper.writeValue(
-                new File(ROOT_ORDER_PATH, makePaymentOrderFileName(bankReferenceId)), paymentOrdersPostRequestBody);
+            objectWriter.writeValue(
+                new File(ROOT_ORDER_FOLDER, makePaymentOrderFileName(bankReferenceId)), paymentOrdersPostRequestBody);
             return ResponseEntity.accepted().body(new PaymentOrdersPostResponseBody()
                 .bankReferenceId(bankReferenceId)
                 .bankStatus("ACCEPTED"));
@@ -43,9 +48,30 @@ public class PaymentOrdersController implements PaymentOrderIntegrationOutboundA
     }
 
     @Override
+    public ResponseEntity<PaymentOrderPutResponseBody> putPaymentOrder(String bankReferenceId,
+        PaymentOrderPutRequestBody paymentOrderPutRequestBody) {
+        log.info("Update payment order {}", paymentOrderPutRequestBody);
+        try {
+            objectWriter.writeValue(
+                new File(ROOT_ORDER_FOLDER, makePaymentOrderFileName(bankReferenceId)), paymentOrderPutRequestBody);
+            return ResponseEntity.ok((PaymentOrderPutResponseBody)
+                new PaymentOrderPutResponseBody()
+                    .bankReferenceId(bankReferenceId)
+                    .bankStatus("ACCEPTED"));
+        } catch (Exception e) {
+            log.error("Error saving file", e);
+            throw new InternalServerErrorException().withMessage("Saving payment order failed");
+        }
+    }
+
+    @Override
     public ResponseEntity<CancelResponse> postCancelPaymentOrder(@Size(max = 64) String bankReferenceId) {
-        return ResponseEntity.ok(new CancelResponse()
-            .accepted(new File(ROOT_ORDER_PATH, makePaymentOrderFileName(bankReferenceId)).delete()));
+        CancelResponse response = new CancelResponse()
+            .accepted(new File(ROOT_ORDER_FOLDER, makePaymentOrderFileName(bankReferenceId)).delete());
+        paymentOrdersApi.putPaymentOrders(new PaymentOrdersPutRequestBody()
+            .bankReferenceId(bankReferenceId)
+            .bankStatus("CANCELLED"));
+        return ResponseEntity.ok(response);
     }
 
     private String makePaymentOrderFileName(String bankReferenceId) {

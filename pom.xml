@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <!-- The simplest way to build a service with service-sdk-starter-core 
@@ -9,8 +10,8 @@
     <parent>
         <artifactId>service-sdk-starter-core</artifactId>
         <groupId>com.backbase.buildingblocks</groupId>
-        <version>12.1.0</version>
-        <relativePath />
+        <version>15.0.1</version>
+        <relativePath/>
     </parent>
 
     <groupId>com.mybank.dbs.payments.integration</groupId>
@@ -21,11 +22,21 @@
 
     <!-- tag::add-properties[] -->
     <properties>
-        <java.version>11</java.version>
-        <swagger-annotations.version>1.6.2</swagger-annotations.version>
-        <jackson-databind-nullable.version>0.2.1</jackson-databind-nullable.version>
-      <jsr305.version>3.0.2</jsr305.version>
+        <java.version>17</java.version>
+
+        <backbase-bom.version>2022.08.5-LTS</backbase-bom.version>
+
+        <swagger-annotations.version>1.6.4</swagger-annotations.version>
+        <jackson-databind-nullable.version>0.2.3</jackson-databind-nullable.version>
+        <jsr305.version>3.0.2</jsr305.version>
+        <junit-vintage-engine.version>5.8.2</junit-vintage-engine.version>
+        <boat-maven-plugin.version>0.16.5</boat-maven-plugin.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+
         <specs.path>${project.build.directory}/specs</specs.path>
+
+        <payment-order-integration-outbound-api.version>2.2.1</payment-order-integration-outbound-api.version>
+        <payment-order-integration-inbound-api.version>2.1.0</payment-order-integration-inbound-api.version>
     </properties>
     <!-- end::add-properties[] -->
 
@@ -33,9 +44,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.backbase.dbs</groupId>
-                <artifactId>banking-services-bom</artifactId>
-                <version>2.20.1.1</version>
+                <groupId>com.backbase</groupId>
+                <artifactId>backbase-bom</artifactId>
+                <version>${backbase-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -62,9 +73,43 @@
             <artifactId>communication</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-parameter-names</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.backbase.buildingblocks</groupId>
             <artifactId>service-sdk-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit-vintage-engine.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
         <!-- end::add-building-blocks-dependencies[] -->
 
@@ -128,7 +173,7 @@
             <plugin>
                 <groupId>com.backbase.oss</groupId>
                 <artifactId>boat-maven-plugin</artifactId>
-                <version>0.13.0</version>
+                <version>${boat-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>generate-integration-outbound-api</id>
@@ -137,7 +182,9 @@
                             <goal>generate-spring-boot-embedded</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${specs.path}/payment/payment-order-integration-outbound-api-v2.0.6.yaml</inputSpec>
+                            <inputSpec>
+                                ${specs.path}/payment/payment-order-integration-outbound-api-v${payment-order-integration-outbound-api.version}.yaml
+                            </inputSpec>
                             <output>${project.build.directory}/generated-sources/</output>
                             <modelPackage>com.backbase.payments.integration.model</modelPackage>
                             <apiPackage>com.backbase.payments.integration.outbound.api</apiPackage>
@@ -151,7 +198,9 @@
                             <goal>generate-rest-template-embedded</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${specs.path}/payment/payment-order-integration-inbound-api-v2.0.2.yaml</inputSpec>
+                            <inputSpec>
+                                ${specs.path}/payment/payment-order-integration-inbound-api-v${payment-order-integration-inbound-api.version}.yaml
+                            </inputSpec>
                             <output>${project.build.directory}/generated-sources/</output>
                             <modelPackage>com.backbase.payments.integration.model</modelPackage>
                             <apiPackage>com.backbase.payments.integration.inbound.api</apiPackage>
@@ -161,6 +210,22 @@
                 </executions>
             </plugin>
             <!-- end::add-boat-plugin[] -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

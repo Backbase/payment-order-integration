@@ -1,0 +1,14 @@
+# Disables the registry client for integration tests
+eureka.client.enabled: false
+
+sso.jwt.internal.signature.key:
+  type: VALUE
+  value: JWTSecretKeyDontUseInProduction!
+
+spring:
+  application.name: test
+
+backbase:
+  security:
+    mtls:
+      enabled: false
