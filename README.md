@@ -1,3 +1,5 @@
+### This repository is archived and moved to https://github.com/Backbase/payments-examples/tree/main/payment-order-integration
+
 Example code for payments integration service. Goes with (newer version of) https://community.backbase.com/documentation/DBS/latest/payments_implement_integration_service
 
 # my-bank-payment-order-integration-service
